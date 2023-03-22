@@ -54,6 +54,15 @@ struct DownloadView: View {
         isDownloadActive: $isDownloadActive,
         downloadSingleAction: {
           // Download a file in a single go.
+          Task {
+            do {
+              isDownloadActive = true
+              fileData = try await model.download(file: file)
+              isDownloadActive = false
+            } catch {
+              isDownloadActive = false
+            }
+          }
         },
         downloadWithUpdatesAction: {
           // Download a file with UI progress updates.
@@ -76,6 +85,10 @@ struct DownloadView: View {
         // Show a preview of the file if it's a valid image.
         FilePreview(fileData: fileData)
       }
+    }
+    .onDisappear {
+      fileData = nil
+      model.reset()
     }
     .animation(.easeOut(duration: 0.33), value: model.downloads)
     .listStyle(.insetGrouped)
